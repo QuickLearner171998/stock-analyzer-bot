@@ -1,5 +1,4 @@
 import streamlit as st
-import tools
 from tools.fetch_stock_info import Anazlyze_stock
 
 st.title("Stock Analysis bot")
