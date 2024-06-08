@@ -1,6 +1,6 @@
-from tools.fetch_stock_info import Anazlyze_stock
+from tools.fetch_stock_info import anazlyze_stock
 
 query = "Shall I invest in Adani power right now?"
-out = Anazlyze_stock(query)
+out = anazlyze_stock(query)
 
 print(out)

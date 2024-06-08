@@ -1,23 +1,18 @@
-import streamlit as st
-from tools.fetch_stock_info import Anazlyze_stock
-
-st.title("Stock Analysis bot")
-st.write("This bot scraps and gathers real time stock realted information and analyzes it using LLM")
-
-query = st.text_input('Input your investment related query:') 
-
-Enter=st.button("Enter")
-clear=st.button("Clear")
-
-if clear:
-    print(clear)
-    st.markdown(' ')
-
-if Enter:
-    import time
-    with st.spinner('Gathering all required information and analyzing. Be patient!!!!!'):
-        out=Anazlyze_stock(query)
-    st.success('Done!')
-    st.write(out)
+import gradio as gr
+from tools.fetch_stock_info import anazlyze_stock
 
 
+demo = gr.Interface(
+    fn=anazlyze_stock,
+    inputs=["text", "checkbox"],
+    outputs=[
+        gr.Textbox(label="Company Name"),
+        gr.Textbox(label="Stock History (Will be shown if `detailed`)"),
+        gr.Textbox(label="Stock Fanancials (Will be shown if `detailed`)"),
+        gr.Textbox(label="Stock News (Will be shown if `detailed`)"),
+        gr.Textbox(label="Final Analysis"),
+    ],
+)
+
+if __name__ == "__main__":
+    demo.launch(share=True)

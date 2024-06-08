@@ -1,12 +1,8 @@
 from bs4 import BeautifulSoup
 import re
 import requests
-
 import yfinance as yf
-
-# from openai import OpenAI
 import anthropic
-
 import warnings
 import os
 
@@ -90,24 +86,13 @@ def get_financial_statements(ticker):
     return balance_sheet
 
 
-
 def get_stock_ticker(query):
     message = client.messages.create(
         model="claude-3-opus-20240229",
         max_tokens=1000,
         temperature=0,
         system="You are an Indian Financial expert. You have to extract the indian NSE/BSE stock ticker of the company and company name from input text. Keep the output very clean and in the format - {symbol}\\n{name}",
-        messages=[
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": query
-                    }
-                ]
-            }
-        ]
+        messages=[{"role": "user", "content": [{"type": "text", "text": query}]}],
     )
 
     output = message.content[0].text
@@ -116,19 +101,14 @@ def get_stock_ticker(query):
     return company_name, company_ticker
 
 
-def Anazlyze_stock(query):
-    # agent.run(query) Outputs Company name, Ticker
-    Company_name, ticker = get_stock_ticker(query)
-    print({"Query": query, "Company_name": Company_name, "Ticker": ticker})
+def anazlyze_stock(query, detailed=False):
+    company_name, ticker = get_stock_ticker(query)
+
     stock_data = get_stock_price(ticker, history=10)
     stock_financials = get_financial_statements(ticker)
-    stock_news = get_recent_stock_news(Company_name)
+    stock_news = get_recent_stock_news(company_name)
 
     available_information = f"Stock Price: {stock_data}\n\nStock Financials: {stock_financials}\n\nStock News: {stock_news}"
-    # available_information=f"Stock Financials: {stock_financials}\n\nStock News: {stock_news}"
-    
-    print(available_information)
-
 
     message = client.messages.create(
         model="claude-3-opus-20240229",
@@ -144,13 +124,17 @@ def Anazlyze_stock(query):
                         "text": f"Give detail stock analysis, Use the available data and provide investment recommendation. \
              The user is fully aware about the investment risk, dont include any kind of warning like 'It is recommended to conduct further research and analysis or consult with a financial advisor before making an investment decision' in the answer \
              User question: {query} \
-             You have the following information available about {Company_name}. Write (5-8) pointwise investment analysis to answer user query, At the end conclude with proper explaination.Try to Give positives and negatives  : \
-              {available_information} "
+             You have the following information available about {company_name}. Write (5-8) pointwise investment analysis to answer user query, At the end conclude with proper explaination.Try to Give positives and negatives  : \
+              {available_information} ",
                     }
-                ]
+                ],
             }
-        ]
+        ],
     )
 
     analysis = message.content[0].text
-    return analysis
+
+    if detailed:
+        return company_name, stock_data, stock_financials, stock_news, analysis
+
+    return company_name, "", "", "", analysis
